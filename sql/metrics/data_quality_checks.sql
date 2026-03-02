@@ -49,3 +49,45 @@ SELECT
   IF(issue_count = 0, 'PASS', 'FAIL') AS status
 FROM checks
 ORDER BY status DESC, check_name;
+
+
+-- stg_orders: null / duplicate
+SELECT 'stg_orders' AS table_name, 'null_order_id' AS check_name, COUNT(*) AS issue_count
+FROM (SELECT CAST(order_id AS INT64) AS order_id FROM `bigquery-public-data.thelook_ecommerce.orders`)
+WHERE order_id IS NULL
+
+UNION ALL
+SELECT 'stg_orders', 'duplicate_order_id', COUNT(*) 
+FROM (
+  SELECT CAST(order_id AS INT64) AS order_id
+  FROM `bigquery-public-data.thelook_ecommerce.orders`
+)
+GROUP BY order_id
+HAVING COUNT(*) > 1
+
+UNION ALL
+-- dim_products: null / duplicate
+SELECT 'dim_products', 'null_product_id', COUNT(*) 
+FROM (SELECT CAST(id AS INT64) AS product_id FROM `bigquery-public-data.thelook_ecommerce.products`)
+WHERE product_id IS NULL
+
+UNION ALL
+SELECT 'dim_products', 'duplicate_product_id', COUNT(*)
+FROM (
+  SELECT CAST(id AS INT64) AS product_id
+  FROM `bigquery-public-data.thelook_ecommerce.products`
+)
+GROUP BY product_id
+HAVING COUNT(*) > 1
+
+UNION ALL
+-- fct_orders: negative revenue sanity (order_items)
+SELECT 'fct_orders', 'negative_revenue_orders', COUNT(*)
+FROM (
+  SELECT
+    CAST(order_id AS INT64) AS order_id,
+    SUM(CAST(sale_price AS FLOAT64)) AS gross_revenue
+  FROM `bigquery-public-data.thelook_ecommerce.order_items`
+  GROUP BY order_id
+)
+WHERE gross_revenue < 0;
