@@ -1,5 +1,11 @@
 ## Project: thelook SQL Analytics Engineering (BigQuery)
 
+Goal: Build BI-ready datasets (staging → marts → metrics) from thelook_ecommerce in BigQuery.
+
+Outputs: dim/fct tables + fct_daily_revenue + KPI queries (funnel/retention) + data quality checks.
+
+Focus: data modeling (grain/keys) + reliability (null/duplicate/sanity checks).
+
 ### Goal
 Build BI-ready datasets from **thelook_ecommerce** (BigQuery public dataset) using a layered approach:
 **staging → marts (dim/fct) → metrics + data quality checks**.
