@@ -1,34 +1,42 @@
-# thelook-sql-analytics-engineering
+## Project: thelook SQL Analytics Engineering (BigQuery)
 
-## What this project demonstrates
-- Clean SQL modeling on BigQuery using theLook dataset
-- Layered approach: staging → marts → metrics
-- Product analytics KPIs: session-based funnel + retention cohort
-- Data quality mindset: reusable QA checks (nulls, duplicates, sanity)
+### Goal
+Build BI-ready datasets from **thelook_ecommerce** (BigQuery public dataset) using a layered approach:
+**staging → marts (dim/fct) → metrics + data quality checks**.
 
-## Models
-### Staging
-- `stg_events`, `stg_users`, `stg_order_items`
+### Data Source
+`bigquery-public-data.thelook_ecommerce.*`
 
-### Marts
-- `dim_users`, `fct_order_items`
+### What’s inside (Layers)
+- **staging/**: standardized, analysis-friendly views (clean naming/casting, minimal transformations)
+- **marts/**: BI-ready models (dimensions & facts) for reporting and dashboards
+- **metrics/**: KPI queries (funnel, retention) + data quality checks
 
-### Metrics
-- `funnel_sessions_daily` (daily conversion rates)
-- `retention_cohort_first_purchase` (D1/D7/D30 retention)
-- `data_quality_checks` (QA checklist)
+### Data model & grain (very important)
+- **dim_users**: 1 row per user (PK: user_id)
+- **dim_products**: 1 row per product (PK: product_id)
+- **fct_orders**: 1 row per order (PK: order_id)
+- **fct_order_items**: 1 row per order item (PK: order_item_id / or composite key depending on source)
+- **fct_daily_revenue**: 1 row per day (PK: order_date)
 
+### Key outputs
+- Daily performance table: `fct_daily_revenue`
+- User/product/order analysis-ready marts: dim/fct tables above
+- KPI queries: `funnel_sessions_daily`, `retention_cohort_first_purchase`
+- Reliability guardrails: `data_quality_checks.sql` (null/duplicate/sanity checks)
 
-Data model & grain
+### How to run (BigQuery)
+Run SQL files in this order:
+1) `staging/*`
+2) `marts/*`
+3) `metrics/*`
 
-stg_users: 1 row per user
+### Data quality approach
+Quality checks are designed to detect:
+- null / duplicate keys (PK integrity)
+- sanity issues (e.g., negative revenue)
+- consistency issues across core entities
 
-dim_users: 1 row per user
-
-stg_orders: 1 row per order
-
-fct_orders: 1 row per order (+ revenue aggregated from order_items)
-
-dim_products: 1 row per product
-
-fct_order_items: 1 row per order item
+### Next steps (optional)
+- migrate models to **dbt** (tests: not_null/unique/relationships, docs)
+- schedule runs (daily) + alerting on failed quality checks
