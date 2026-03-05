@@ -2,7 +2,12 @@
 -- Grain: 1 row per day
 
 WITH fct_orders AS (
-  SELECT *
+  SELECT
+    o.order_id,
+    o.user_id,
+    o.created_at,
+    a.gross_revenue,
+    a.items_count
   FROM `bigquery-public-data.thelook_ecommerce.orders` o
   LEFT JOIN (
     SELECT
